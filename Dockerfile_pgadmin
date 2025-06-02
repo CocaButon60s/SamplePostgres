@@ -1,0 +1,15 @@
+FROM dpage/pgadmin4:latest
+
+USER root
+RUN <<EOF
+apk update
+apk add openssl
+EOF
+
+USER pgadmin
+WORKDIR /certs
+RUN <<EOF
+openssl genrsa 4096 > server.key
+openssl req -new -x509 -days 365 -key server.key -sha512 -out server.cert -subj "/C=JP/ST=Tokyo/L=Chiyoda/O=ExampleOrg/OU=IT/CN=example.com"
+EOF
+WORKDIR /pgadmin4

@@ -1,0 +1,35 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile_postgres
+      args:
+        TESTER1_PSWD: ${TESTER1_PSWD}
+        TESTER2_PSWD: ${TESTER2_PSWD}
+        TESTER3_PSWD: ${TESTER3_PSWD}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "51000:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    build:
+      context: .
+      dockerfile: Dockerfile_pgadmin
+    ports:
+      - "51500:443"
+    volumes:
+      - pgadata:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_ENABLE_TLS: True
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+  pgadata:
