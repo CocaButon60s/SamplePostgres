@@ -1,12 +1,6 @@
 services:
   db:
-    build:
-      context: .
-      dockerfile: Dockerfile_postgres
-      args:
-        TESTER1_PSWD: ${TESTER1_PSWD}
-        TESTER2_PSWD: ${TESTER2_PSWD}
-        TESTER3_PSWD: ${TESTER3_PSWD}
+    image: postgres:17.5
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
