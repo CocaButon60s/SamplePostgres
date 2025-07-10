@@ -3,7 +3,11 @@ FROM dpage/pgadmin4:latest
 USER root
 RUN <<EOF
 apk update
-apk add openssl
+apk add openssl zstd
+EOF
+
+COPY <<EOF /etc/sudoers.d/pgadmin
+pgadmin ALL=(ALL) NOPASSWD: ALL
 EOF
 
 USER pgadmin
