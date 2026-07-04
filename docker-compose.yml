@@ -7,7 +7,7 @@ services:
     ports:
       - "51000:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
 
   pgadmin:
     build:
