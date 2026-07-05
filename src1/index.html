@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>フォルダアップロード</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 720px;
+        margin: 40px auto;
+        padding: 0 16px;
+        line-height: 1.6;
+      }
+      .box {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 16px;
+        background: #fafafa;
+      }
+      button {
+        padding: 8px 14px;
+        margin-top: 12px;
+        cursor: pointer;
+      }
+      #log {
+        white-space: pre-wrap;
+        margin-top: 16px;
+        font-size: 14px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>フォルダアップロード</h1>
+
+    <div class="box">
+      <input id="folderInput" type="file" webkitdirectory directory multiple />
+      <br />
+      <button id="uploadBtn" type="button">アップロード</button>
+      <div id="log"></div>
+    </div>
+
+    <script>
+      const folderInput = document.getElementById("folderInput");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const log = document.getElementById("log");
+
+      uploadBtn.addEventListener("click", async () => {
+        const files = folderInput.files;
+        if (!files || files.length === 0) {
+          log.textContent = "先にフォルダを選択してください。";
+          return;
+        }
+
+        const formData = new FormData();
+
+        for (const file of files) {
+          formData.append("files", file, file.webkitRelativePath || file.name);
+        }
+        formData.append("buildingid", 1);
+
+        log.textContent = `選択ファイル数: ${files.length}\nアップロード中...`;
+
+        try {
+          const res = await fetch("/upload-folder", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+          }
+
+          const resultText = await res.text();
+          log.textContent = `完了\n${resultText}`;
+        } catch (err) {
+          log.textContent = `失敗: ${err.message}`;
+        }
+      });
+    </script>
+  </body>
+</html>
