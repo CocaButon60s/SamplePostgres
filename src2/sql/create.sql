@@ -1,0 +1,27 @@
+CREATE TABLE building (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE ptn (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    partname TEXT NOT NULL
+);
+
+CREATE TABLE room (
+    building_id INTEGER REFERENCES building(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    ptn_id INTEGER REFERENCES ptn(id) ON DELETE SET NULL,
+
+    PRIMARY KEY (building_id, name)
+);
+
+CREATE TABLE settings (
+    main INTEGER NOT NULL,
+    sub1 INTEGER NOT NULL,
+    sub2 INTEGER NOT NULL,
+    val INTEGER NOT NULL,
+    ptn_id INTEGER REFERENCES ptn(id) ON DELETE CASCADE,
+
+    PRIMARY KEY (main, sub1, sub2, ptn_id)
+);

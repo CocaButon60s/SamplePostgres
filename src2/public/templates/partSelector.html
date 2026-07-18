@@ -1,0 +1,34 @@
+<div style="padding: 20px">
+  <h2>品番選択</h2>
+  <table
+    id="roomTable"
+    style="width: 100%; border-collapse: collapse; margin-bottom: 20px"
+  >
+    <thead>
+      <tr style="background: #f0f0f0">
+        <th style="border: 1px solid #ccc; padding: 8px">部屋</th>
+        <th style="border: 1px solid #ccc; padding: 8px">品番</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr data-ptnid="{{ row.id }}">
+        <td style="border: 1px solid #ccc; padding: 8px">{{ row.rooms }}等</td>
+        <td style="border: 1px solid #ccc; padding: 8px">
+          <select>
+            <option value="partA">partA</option>
+            <option value="partB">partB</option>
+            <option value="partC">partC</option>
+          </select>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div style="margin-top: 20px">
+    <button id="closeBtn" type="button">閉じる</button>
+    <button id="saveBtn" type="button" style="margin-left: 10px">
+      データ保存
+    </button>
+  </div>
+</div>

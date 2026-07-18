@@ -1,15 +1,16 @@
 import db from "./pgclient.js";
+import env from "./nunjucks.js";
 
 const folderInput = document.getElementById("folderInput");
 const log = document.getElementById("log");
 
-const genQuery = async (db) => {
+const genQuery = async () => {
   return async (cmd) => {
     console.log(cmd);
     await db.query(cmd);
   };
 };
-const query = await genQuery(db);
+const query = await genQuery();
 
 document.getElementById("uploadBtn")?.addEventListener("click", async () => {
   const files = folderInput.files;
@@ -32,8 +33,8 @@ document.getElementById("uploadBtn")?.addEventListener("click", async () => {
       ) ON COMMIT DROP;
     `);
     await db.query(`
-      CREATE TEMP TABLE room (
-        room INTEGER NOT NULL,
+      CREATE TEMP TABLE tmproom (
+        name INTEGER NOT NULL,
         ptn_id INTEGER NOT NULL
       ) ON COMMIT DROP;
     `);
@@ -41,7 +42,7 @@ document.getElementById("uploadBtn")?.addEventListener("click", async () => {
     let ret;
     for (const file of files) {
       const settings = await file.text();
-      const room = file.webkitRelativePath.split("/")[1];
+      const roomname = file.webkitRelativePath.split("/")[1];
       ret = await db.query(
         `
         INSERT INTO tmpptn (settings) VALUES ($1)
@@ -53,93 +54,104 @@ document.getElementById("uploadBtn")?.addEventListener("click", async () => {
       const ptnid = ret.rows[0].id;
       await db.query(
         `
-        INSERT INTO room (room, ptn_id) VALUES ($1, $2)
+        INSERT INTO tmproom (name, ptn_id) VALUES ($1, $2)
         `,
-        [room, ptnid],
+        [roomname, ptnid],
       );
     }
-    displayModal();
+    await genDispModal()();
   } catch (err) {
     console.error(err);
     await query("ROLLBACK");
   }
 });
 
-async function displayModal() {
-  try {
-    const ptnRet = await db.query(`SELECT * FROM tmpptn`);
-    const roomRet = await db.query(`SELECT * FROM room`);
+const genDispModal = () => {
+  return async () => {
+    try {
+      const ptnRet = await db.query(`SELECT * FROM tmpptn`);
+      const roomRet = await db.query(`SELECT * FROM tmproom`);
 
-    console.log("ptnRet:", ptnRet.rows);
-    console.log("roomRet:", roomRet.rows);
-
-    const data = await db.query(`
-      SELECT t.id, array_to_string(array_agg(r.room ORDER BY r.room::INTEGER), ',') AS rooms
+      const data = await db.query(`
+      SELECT t.id, array_to_string(array_agg(r.name ORDER BY r.name::INTEGER), ',') AS rooms
       FROM tmpptn t
       JOIN (
-        SELECT room, ptn_id, ROW_NUMBER() OVER (PARTITION BY ptn_id ORDER BY room::INTEGER) AS rn FROM room
+        SELECT name, ptn_id, ROW_NUMBER() OVER (PARTITION BY ptn_id ORDER BY name::INTEGER) AS rn FROM tmproom
       ) r ON t.id = r.ptn_id AND r.rn <= 3
       GROUP BY t.id
       `);
-    console.log(data.rows);
 
-    const tbody = document.querySelector("#roomTable tbody");
-    tbody.innerHTML = data.rows
-      .map(
-        (row) => `
-      <tr data-ptnid="${row.id}">
-        <td style="border: 1px solid #ccc; padding: 8px;">${row.rooms}等</td>
-        <td style="border: 1px solid #ccc; padding: 8px;">
-          <select>
-            <option value="partA">partA</option>
-            <option value="partB">partB</option>
-            <option value="partC">partC</option>
-          </select>
-        </td>
-      </tr>
-    `,
-      )
-      .join("");
+      const renderedHtml = env.render("partSelector.html", { rows: data.rows });
+      const dialog = document.querySelector("#partSelector");
+      if (dialog) {
+        dialog.innerHTML = renderedHtml;
+      } else {
+        throw new Error("Dialog element not found");
+      }
 
-    document.querySelector("#partSelector").showModal();
-  } catch (err) {
-    console.error(err);
-    await query("ROLLBACK");
+      document
+        .getElementById("closeBtn")
+        ?.addEventListener("click", closeModal);
+      document
+        .getElementById("saveBtn")
+        ?.addEventListener("click", savePartNames);
+
+      document.querySelector("#partSelector").showModal();
+    } catch (err) {
+      console.error(err);
+      await query("ROLLBACK");
+      document.querySelector("#partSelector").close();
+    }
+  };
+};
+
+const genClose = () => {
+  return async () => {
+    await query("COMMIT");
     document.querySelector("#partSelector").close();
-  }
-}
+  };
+};
+const genSavePartNames = () => {
+  return async () => {
+    try {
+      const rows = document.querySelectorAll("#roomTable tbody tr");
+      for (const row of rows) {
+        const ptnId = row.getAttribute("data-ptnid");
+        const select = row.querySelector("select");
+        const partName = select.value;
 
-document.getElementById("closeBtn")?.addEventListener("click", async () => {
-  await query("COMMIT");
-  document.querySelector("#partSelector").close();
-});
-
-document.getElementById("saveBtn")?.addEventListener("click", async () => {
-  try {
-    const rows = document.querySelectorAll("#roomTable tbody tr");
-    for (const row of rows) {
-      const ptnId = row.getAttribute("data-ptnid");
-      const select = row.querySelector("select");
-      const partName = select.value;
-
-      await db.query(
-        `
+        await db.query(
+          `
       UPDATE tmpptn
       SET partname = $1
       WHERE id = $2
       `,
-        [partName, ptnId],
-      );
+          [partName, ptnId],
+        );
+      }
+
+      const res = await fetch("/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ptn: await db.query(`SELECT * FROM tmpptn`),
+          room: await db.query(`SELECT * FROM tmproom`),
+        }),
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const text = await res.text();
+      console.log(text);
+
+      await query("COMMIT");
+    } catch (err) {
+      console.error(err);
+      await query("ROLLBACK");
+    } finally {
+      document.querySelector("#partSelector").close();
     }
-
-    const ret = await db.query(`SELECT * FROM tmpptn`);
-    console.log(ret.rows);
-
-    await query("COMMIT");
-  } catch (err) {
-    console.error(err);
-    await query("ROLLBACK");
-  } finally {
-    document.querySelector("#partSelector").close();
-  }
-});
+  };
+};
+const closeModal = genClose();
+const savePartNames = genSavePartNames();

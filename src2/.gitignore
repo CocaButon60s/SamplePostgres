@@ -30,3 +30,4 @@ dist-ssr
 public/*
 !public/.gitignore
 !public/index.html
+!public/templates

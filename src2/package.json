@@ -26,6 +26,8 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "nunjucks": "^3.2.4",
+    "pg": "^8.22.0"
   }
 }
