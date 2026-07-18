@@ -1,3 +1,5 @@
+name: SamplePG
+
 services:
   db:
     image: postgres:latest
@@ -6,24 +8,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "51000:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql
 
   pgadmin:
-    build:
-      context: .
-      dockerfile: Dockerfile_pgadmin
+    image: dpage/pgadmin4:latest
     ports:
-      - "51500:443"
-    volumes:
-      - pgadata:/var/lib/pgadmin
+      - "51500:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-      PGADMIN_ENABLE_TLS: True
-    depends_on:
-      - db
-
-volumes:
-  pgdata:
-  pgadata:

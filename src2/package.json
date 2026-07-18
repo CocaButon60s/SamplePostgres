@@ -1,0 +1,31 @@
+{
+  "name": "src2",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "tsc && vp build",
+    "preview": "vp preview",
+    "preserver:dev": "vp build",
+    "preserver:start": "vp build",
+    "server:dev": "node --watch server.mjs",
+    "server:start": "NODE_ENV=production node server.mjs"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.13.1",
+      "onFail": "download"
+    }
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.4",
+    "express": "^5.2.1"
+  }
+}

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>フォルダアップロード</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 720px;
+        margin: 40px auto;
+        padding: 0 16px;
+        line-height: 1.6;
+      }
+      .box {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 16px;
+        background: #fafafa;
+      }
+      button {
+        padding: 8px 14px;
+        margin-top: 12px;
+        cursor: pointer;
+      }
+      #log {
+        white-space: pre-wrap;
+        margin-top: 16px;
+        font-size: 14px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>フォルダアップロード</h1>
+
+    <div class="box">
+      <input id="folderInput" type="file" webkitdirectory directory multiple />
+      <br />
+      <button id="uploadBtn" type="button">アップロード</button>
+      <div id="log"></div>
+    </div>
+
+    <dialog
+      id="partSelector"
+      style="
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 800px;
+      "
+    >
+      <div style="padding: 20px">
+        <h2>品番選択</h2>
+        <table
+          id="roomTable"
+          style="width: 100%; border-collapse: collapse; margin-bottom: 20px"
+        >
+          <thead>
+            <tr style="background: #f0f0f0">
+              <th style="border: 1px solid #ccc; padding: 8px">部屋</th>
+              <th style="border: 1px solid #ccc; padding: 8px">品番</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div style="margin-top: 20px">
+          <button id="closeBtn" type="button">閉じる</button>
+          <button id="saveBtn" type="button" style="margin-left: 10px">
+            データ保存
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <script type="module" src="/dist/index.js"></script>
+  </body>
+</html>
