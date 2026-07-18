@@ -79,6 +79,7 @@ const genDispModal = () => {
         SELECT name, ptn_id, ROW_NUMBER() OVER (PARTITION BY ptn_id ORDER BY name::INTEGER) AS rn FROM tmproom
       ) r ON t.id = r.ptn_id AND r.rn <= 3
       GROUP BY t.id
+      ORDER BY MIN(r.name::INTEGER);
       `);
 
       const renderedHtml = env.render("partSelector.html", { rows: data.rows });
